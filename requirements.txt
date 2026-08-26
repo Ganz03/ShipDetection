@@ -1,9 +1,14 @@
+--find-links https://download.pytorch.org/whl/cpu/torch_stable.html
 streamlit>=1.40.0
 ultralytics>=8.3.0
-opencv-python>=4.10.0
+opencv-python-headless>=4.8.0
 numpy>=1.26.0
-opencv-contrib-python>=4.8.0
-torch>=2.0.0
-torchvision>=0.15.0
+# opencv-contrib removed for headless environment
+# Use CPU PyTorch wheels on Streamlit Cloud (no GPU available). Pin CPU wheel below.
+# torch>=2.0.0
+# torchvision>=0.15.0
+
+torch==2.2.2+cpu
+torchvision==0.18.1+cpu
 pandas>=2.0.0
 Pillow>=10.0.0

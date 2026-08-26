@@ -9,7 +9,16 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import streamlit as st
-from ultralytics import YOLO
+
+# Defer ultralytics import and handle missing binary dependencies (cv2/torch) gracefully.
+# On Streamlit Cloud the app can fail on import if required binary wheels (opencv, torch) are not present.
+try:
+    from ultralytics import YOLO
+except Exception as e:  # pragma: no cover - show friendly error in Streamlit if import fails
+    YOLO = None
+    ULTRALYTICS_IMPORT_ERROR = e
+else:
+    ULTRALYTICS_IMPORT_ERROR = None
 
 try:
     import torch
@@ -208,6 +217,16 @@ def apply_style() -> None:
 
 @st.cache_resource(show_spinner=False)
 def load_model(path: str):
+    # If ultralytics failed to import (missing binary wheels like cv2/torch), show a friendly Streamlit error
+    if 'ULTRALYTICS_IMPORT_ERROR' in globals() and ULTRALYTICS_IMPORT_ERROR is not None:
+        st.error(
+            "Model dependencies failed to import on this environment. Make sure the environment has the necessary binary wheels (opencv-python-headless and a compatible torch).\n\nFull error: "
+            + str(ULTRALYTICS_IMPORT_ERROR)
+        )
+        st.stop()
+    if YOLO is None:
+        st.error("ultralytics.YOLO is unavailable — check your requirements/install")
+        st.stop()
     return YOLO(path)
 
 
